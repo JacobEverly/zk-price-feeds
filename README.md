@@ -65,7 +65,7 @@ A ZK oracle that reads Uniswap V2 pool reserves across multiple blocks inside a 
 ### 1. Test locally (execute only, no proof)
 
 ```bash
-git clone https://github.com/JacobEverly/zk-price-feeds.git
+git clone https://github.com/JacobEverly/zk-price-feeds
 cd zk-price-feeds
 
 # Execute the guest program without generating a ZK proof.

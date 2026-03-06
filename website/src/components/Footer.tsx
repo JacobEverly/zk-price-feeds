@@ -38,11 +38,11 @@ export default function Footer() {
               <span className="text-neon-green">$</span>
               <span className="text-text-primary">
                 {" "}
-                git clone https://github.com/boundless-xyz/zk-oracle
+                git clone https://github.com/JacobEverly/zk-price-feeds
               </span>
               {"\n"}
               <span className="text-neon-green">$</span>
-              <span className="text-text-primary"> cd zk-oracle</span>
+              <span className="text-text-primary"> cd zk-price-feeds</span>
               {"\n\n"}
               <span className="text-text-muted">
                 # Set your pool address and run
@@ -60,7 +60,7 @@ export default function Footer() {
         {/* Links */}
         <div className="flex items-center justify-center gap-4 flex-wrap">
           <a
-            href="https://github.com/boundless-xyz/zk-oracle"
+            href="https://github.com/JacobEverly/zk-price-feeds"
             target="_blank"
             rel="noopener noreferrer"
             className="px-8 py-4 rounded-xl font-bold text-lg text-bg transition-all duration-300 hover:-translate-y-1 glow-green"
