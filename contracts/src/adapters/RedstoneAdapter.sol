@@ -3,12 +3,15 @@ pragma solidity ^0.8.26;
 
 import {ZkOracle} from "../ZkOracle.sol";
 
-/// @notice Minimal IRedstoneAdapter interface for price reading (push model).
+/// @notice IRedstoneAdapter interface for price reading (push model).
 interface IRedstoneAdapter {
     function getValueForDataFeed(bytes32 dataFeedId) external view returns (uint256);
     function getValuesForDataFeeds(bytes32[] memory dataFeedIds) external view returns (uint256[] memory);
     function getTimestampsFromLatestUpdate() external view returns (uint128 dataTimestamp, uint128 blockTimestamp);
+    function getDataTimestampFromLatestUpdate() external view returns (uint256 lastDataTimestamp);
+    function getBlockTimestampFromLatestUpdate() external view returns (uint256 blockTimestamp);
     function getDataFeedIds() external view returns (bytes32[] memory);
+    function getDataFeedIndex(bytes32 dataFeedId) external view returns (uint256);
 }
 
 /// @title ZkOracleRedstoneAdapter
@@ -56,11 +59,31 @@ contract ZkOracleRedstoneAdapter is IRedstoneAdapter {
         return (uint128(updatedAt), uint128(updatedAt));
     }
 
+    /// @notice Returns the data timestamp from the latest update.
+    function getDataTimestampFromLatestUpdate() external view override returns (uint256 lastDataTimestamp) {
+        if (oracle.currentRoundId() == 0) revert NoRoundData();
+        (,,, uint256 updatedAt,) = oracle.latestRoundData();
+        return updatedAt;
+    }
+
+    /// @notice Returns the block timestamp from the latest update.
+    function getBlockTimestampFromLatestUpdate() external view override returns (uint256 blockTimestamp) {
+        if (oracle.currentRoundId() == 0) revert NoRoundData();
+        (,,, uint256 updatedAt,) = oracle.latestRoundData();
+        return updatedAt;
+    }
+
     /// @notice Returns the list of supported data feed IDs.
     function getDataFeedIds() external view override returns (bytes32[] memory) {
         bytes32[] memory ids = new bytes32[](1);
         ids[0] = dataFeedId;
         return ids;
+    }
+
+    /// @notice Returns the index of a data feed (always 0 for single-feed adapter).
+    function getDataFeedIndex(bytes32 _dataFeedId) external view override returns (uint256) {
+        if (_dataFeedId != dataFeedId) revert UnsupportedDataFeed(_dataFeedId);
+        return 0;
     }
 
     // ─── Internal ──────────────────────────────────────────────────────
