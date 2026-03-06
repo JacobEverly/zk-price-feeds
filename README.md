@@ -62,15 +62,27 @@ A ZK oracle that reads Uniswap V2 pool reserves across multiple blocks inside a 
 - [Foundry](https://book.getfoundry.sh/getting-started/installation) (for Solidity)
 - An Ethereum RPC URL (Alchemy, Infura, etc.)
 
-### 1. Run the prover locally
+### 1. Test locally (execute only, no proof)
 
 ```bash
-# Clone the repo
 git clone https://github.com/JacobEverly/zk-price-feeds.git
 cd zk-price-feeds
 
-# Run against WETH/USDC on mainnet (10 block median)
-RPC_URL=https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY \
+# Execute the guest program without generating a ZK proof.
+# Fast -- good for testing the computation is correct.
+cargo run --release -- \
+  --rpc-url $RPC_URL \
+  --pool 0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc \
+  --num-blocks 10 \
+  --decimals 18 \
+  --execute-only
+```
+
+### 2. Generate a ZK proof
+
+```bash
+# Generate a Groth16 proof (requires RISC Zero prover).
+# Takes ~15 seconds. Outputs journal + seal.
 cargo run --release -- \
   --rpc-url $RPC_URL \
   --pool 0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc \
@@ -78,20 +90,12 @@ cargo run --release -- \
   --decimals 18
 ```
 
-This will:
-1. Fetch reserves from the Uniswap V2 pool across 10 blocks
-2. Run the computation inside the zkVM
-3. Output the median price with cycle count
-
-### 2. Deploy the oracle contract
+### 3. Deploy the oracle contract
 
 ```bash
 cd contracts
-
-# Install Foundry dependencies
 forge install
 
-# Deploy ZkOracle (Chainlink-compatible by default)
 forge create src/ZkOracle.sol:ZkOracle \
   --constructor-args \
     <RISC_ZERO_VERIFIER_ADDRESS> \
@@ -103,9 +107,26 @@ forge create src/ZkOracle.sol:ZkOracle \
   --private-key $PRIVATE_KEY
 ```
 
-### 3. Update the price
+### 4. Prove and submit on-chain (end-to-end)
 
-Call `updatePrice(journalData, seal)` with the proof output from the host program. Anyone can call this — it's permissionless.
+```bash
+# Generate proof AND submit it to the ZkOracle contract.
+# This is the full pipeline: read → prove → verify on-chain → store price.
+cargo run --release -- \
+  --rpc-url $RPC_URL \
+  --pool 0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc \
+  --num-blocks 10 \
+  --decimals 18 \
+  --oracle-address <DEPLOYED_ZK_ORACLE_ADDRESS> \
+  --private-key $ETH_WALLET_PRIVATE_KEY
+```
+
+The host will:
+1. Fetch reserves across N blocks via Steel
+2. Generate a Groth16 ZK proof (~15 seconds)
+3. Verify the on-chain contract's image ID matches
+4. Call `updatePrice(journal, seal)` on-chain
+5. Confirm the transaction and print the new price round
 
 ## Oracle Adapters
 
