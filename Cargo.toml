@@ -1,0 +1,36 @@
+[workspace]
+resolver = "2"
+members = ["host", "methods"]
+
+[workspace.dependencies]
+# Steel from git (not yet published at v3.0 on crates.io)
+risc0-steel = { git = "https://github.com/boundless-xyz/steel.git" }
+
+# risc0 monorepo dependencies
+risc0-build = { version = "3.0" }
+risc0-zkvm = { version = "3.0" }
+
+alloy = { version = "1.0", features = ["providers", "rpc-types", "transports", "contract"] }
+alloy-primitives = { version = "1.0" }
+alloy-sol-types = { version = "1.0" }
+anyhow = "1.0"
+clap = { version = "4.5", features = ["derive", "env"] }
+serde = { version = "1.0", features = ["derive"] }
+tokio = { version = "1.39", features = ["full"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+url = { version = "2.5" }
+zk-oracle-methods = { path = "methods" }
+
+# Always optimize; building and running the guest takes much longer without optimization.
+[profile.dev]
+opt-level = 3
+
+[profile.dev.build-override]
+opt-level = 3
+
+[profile.release]
+debug = 1
+lto = true
+
+[profile.release.build-override]
+opt-level = 3

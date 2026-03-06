@@ -1,0 +1,22 @@
+# Rust
+target/
+Cargo.lock
+
+# Foundry
+contracts/cache/
+contracts/out/
+contracts/lib/
+
+# Node / Next.js
+website/node_modules/
+website/.next/
+website/out/
+website/.vercel/
+
+# OS
+.DS_Store
+*.swp
+
+# Environment
+.env
+.env.local
